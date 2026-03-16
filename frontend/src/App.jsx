@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 // Emily Digital Marketing Agent - Main App Component
@@ -40,6 +40,7 @@ import AddBlogPage from './pages/AddBlogPage.jsx'
 import BlogListingPage from './pages/BlogListingPage.jsx'
 import BlogDetailPage from './pages/BlogDetailPage.jsx'
 import BlogProtectedRoute from './components/BlogProtectedRoute.jsx'
+const RoboticsLandingPage = lazy(() => import('./pages/RoboticsLandingPage.jsx'))
 // Subscription Components
 import SubscriptionSelector from './components/SubscriptionSelector'
 import PaymentSuccess from './components/PaymentSuccess'
@@ -61,7 +62,7 @@ function ProtectedRoute({ children }) {
           const subResponse = await subscriptionAPI.getSubscriptionStatus()
           console.log('Subscription status response:', subResponse.data)
           setSubscriptionStatus(subResponse.data)
-          
+
           // Only check onboarding if user has active subscription
           if (subResponse.data.has_active_subscription) {
             console.log('User has active subscription, checking onboarding status')
@@ -157,157 +158,162 @@ function AppContent() {
 
   return (
     <Router>
-      <Routes>
-        {/*  Routes */}
-        <Route path="/" element={
-          window.__TAURI_INTERNALS__ !== undefined ?
-            <Navigate to="/dashboard" replace /> :
-            <LandingPage />
-        } />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsAndConditions />} />
-        <Route path="/cancellation-refunds" element={<CancellationAndRefunds />} />
-        <Route path="/shipping" element={<Shipping />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route 
-          path="/add-blog" 
-          element={
-            <BlogProtectedRoute>
-              <AddBlogPage />
-            </BlogProtectedRoute>
-          } 
-        />
-        <Route path="/blog" element={<BlogListingPage />} />
-        <Route path="/blog/:slug" element={<BlogDetailPage />} />
-        
-        {/* App Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/reset-password" element={<ForgotPassword />} />
-        
-        {/* Subscription Routes */}
-        <Route path="/subscription" element={<SubscriptionSelector />} />
-        <Route path="/payment/success" element={<PaymentSuccess />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <EmilyDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/emily" 
-          element={
-            <ProtectedRoute>
-              <EmilyDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/created-content"
-          element={
-            <ProtectedRoute>
-              <CreatedContentDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route
-          path="/social"
-          element={
-            <ProtectedRoute>
-              <SocialMediaDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/leads"
-          element={
-            <ProtectedRoute>
-              <LeadsDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/calendars"
-          element={
-            <ProtectedRoute>
-              <CalendarDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/post-suggestions"
-          element={
-            <ProtectedRoute>
-              <PostSuggestionsDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/atsn" 
-          element={
-            <ProtectedRoute>
-              <ATSNDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/onboarding" 
-          element={<Onboarding />} 
-        />
-        <Route
-          path="/edit-profile"
-          element={
-            <ProtectedRoute>
-              <EditProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/google-callback" 
-          element={<GoogleCallback />} 
-        />
-        <Route 
-          path="/auth/callback" 
-          element={<TokenExchangeHandler />} 
-        />
-        <Route 
-          path="/billing" 
-          element={
-            <ProtectedRoute>
-              <BillingDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/settings" 
-          element={
-            <ProtectedRoute>
-              <SettingsDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>
-          } 
-        />
-      </Routes>
-      
+      <Suspense fallback={<LoadingBar />}>
+        <Routes>
+          {/*  Routes */}
+          <Route path="/" element={
+            window.__TAURI_INTERNALS__ !== undefined ?
+              <Navigate to="/dashboard" replace /> :
+              <LandingPage />
+          } />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/cancellation-refunds" element={<CancellationAndRefunds />} />
+          <Route path="/shipping" element={<Shipping />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route
+            path="/add-blog"
+            element={
+              <BlogProtectedRoute>
+                <AddBlogPage />
+              </BlogProtectedRoute>
+            }
+          />
+          <Route path="/blog" element={<BlogListingPage />} />
+          <Route path="/blog/:slug" element={<BlogDetailPage />} />
+
+          {/* ATSN Robotics routes (lazy-loaded) */}
+          <Route path="/robotics" element={<RoboticsLandingPage />} />
+
+          {/* App Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/reset-password" element={<ForgotPassword />} />
+
+          {/* Subscription Routes */}
+          <Route path="/subscription" element={<SubscriptionSelector />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <EmilyDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/emily"
+            element={
+              <ProtectedRoute>
+                <EmilyDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/created-content"
+            element={
+              <ProtectedRoute>
+                <CreatedContentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/social"
+            element={
+              <ProtectedRoute>
+                <SocialMediaDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leads"
+            element={
+              <ProtectedRoute>
+                <LeadsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendars"
+            element={
+              <ProtectedRoute>
+                <CalendarDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/post-suggestions"
+            element={
+              <ProtectedRoute>
+                <PostSuggestionsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/atsn"
+            element={
+              <ProtectedRoute>
+                <ATSNDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/onboarding"
+            element={<Onboarding />}
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/google-callback"
+            element={<GoogleCallback />}
+          />
+          <Route
+            path="/auth/callback"
+            element={<TokenExchangeHandler />}
+          />
+          <Route
+            path="/billing"
+            element={
+              <ProtectedRoute>
+                <BillingDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboard />
+              </AdminProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
+
       {/* Global Notification Window */}
-      <NotificationWindow 
+      <NotificationWindow
         notifications={notifications}
         onClose={removeNotification}
         onMarkAsRead={markAsRead}
