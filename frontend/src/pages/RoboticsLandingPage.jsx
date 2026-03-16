@@ -2,13 +2,12 @@ import React, { useEffect } from 'react';
 import SEO from '../components/SEO';
 import RobotGuide from '../components/robotics/RobotGuide';
 import BlurText from '../components/ui/BlurText';
-import Magnet from '../components/ui/Magnet';
 import TiltCard from '../components/ui/TiltCard';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import CardSwap, { Card } from '../components/ui/CardSwap';
 import LightRays from '../components/ui/LightRays';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -170,11 +169,6 @@ const RoboticsLandingPage = () => {
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 w-full px-10 py-6 flex justify-between items-center z-50 mix-blend-difference pointer-events-auto">
           <div className="text-2xl font-bold tracking-tight">ATSN ROBOTICS</div>
-          <Magnet padding={60} magnetStrength={3}>
-            <button className="px-6 py-2 border border-white/20 rounded-full hover:bg-white/10 transition">
-              Book Demo
-            </button>
-          </Magnet>
         </header>
 
         {/* ── SECTION 1: HERO ── */}
