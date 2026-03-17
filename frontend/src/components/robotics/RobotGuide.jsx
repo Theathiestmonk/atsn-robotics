@@ -171,12 +171,7 @@ function RobotModel({ sectionRef, sectionProgressRef }) {
 }
 
 function RobotFallback() {
-  return (
-    <mesh>
-      <boxGeometry args={[0.4, 0.4, 0.4]} />
-      <meshStandardMaterial color="#22d3ee" wireframe />
-    </mesh>
-  )
+  return <group />
 }
 
 // ── Main export ──────────────────────────────────────────────────────────────
