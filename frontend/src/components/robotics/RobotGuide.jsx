@@ -212,9 +212,10 @@ const RobotGuide = () => {
   const { sectionRef, sectionProgressRef } = useSectionProgressRefs()
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-0 h-full w-full max-w-full pointer-events-none overflow-hidden">
       <Canvas
-        style={{ width: '100vw', height: '100vh' }}
+        className="!block h-full w-full max-w-full touch-none"
+        style={{ width: '100%', height: '100%' }}
         camera={{ position: [0, 1.1, 6.25], fov: 50, near: 0.1, far: 100 }}
       >
         <ambientLight intensity={0.7} />

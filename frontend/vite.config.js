@@ -1,43 +1,58 @@
-import { defineConfig } from 'vite'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [react()],
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: mode === 'development',
-    minify: mode === 'production' ? 'esbuild' : false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['lucide-react'],
-          supabase: ['@supabase/supabase-js']
-        }
-      }
-    }
-  },
-  define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version)
-  },
-  optimizeDeps: {
-    exclude: ['@tauri-apps/api', '@tauri-apps/api/*']
-  },
-  // Mark Tauri APIs as external during development
-  ssr: {
-    noExternal: ['@tauri-apps/api']
-  }
-}))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// https://vite.dev/config/
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, __dirname, '')
+  // Must match backend/.env PORT (contact API)
+  const contactApiPort = env.VITE_CONTACT_API_PORT || '8788'
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 3000,
+      strictPort: false,
+      // Order matters: more specific `/api/contact` before `/api`
+      proxy: {
+        '/api/contact': {
+          target: `http://localhost:${contactApiPort}`,
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api\/contact/, '/contact'),
+        },
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api/, ''),
+        },
+      },
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: mode === 'development',
+      minify: mode === 'production' ? 'esbuild' : false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            router: ['react-router-dom'],
+            ui: ['lucide-react'],
+            supabase: ['@supabase/supabase-js'],
+          },
+        },
+      },
+    },
+    define: {
+      __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    },
+    optimizeDeps: {
+      exclude: ['@tauri-apps/api', '@tauri-apps/api/*'],
+    },
+    ssr: {
+      noExternal: ['@tauri-apps/api'],
+    },
+  }
+})

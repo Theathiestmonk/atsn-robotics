@@ -5,12 +5,61 @@
 @tailwind utilities;
 
 @layer base {
+  /* Avoid horizontal overflow from 100vw-style content (extra scrollbar track beside the main one). */
+  html {
+    overflow-x: clip;
+  }
+
   html,
   body {
     @apply font-sans text-slate-50;
     background: #050505;
     overscroll-behavior-y: none;
   }
+
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* Google Maps iframe — dark theme to match #050505 + violet accents (embed has no native dark mode) */
+.map-embed-dark-wrap {
+  position: relative;
+  background: #0a0a0a;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.15),
+    0 12px 40px -12px rgba(0, 0, 0, 0.6);
+}
+
+.map-embed-dark-wrap iframe.map-embed-dark {
+  display: block;
+  width: 100%;
+  border: 0;
+  /* Light map → dark, then hue-correct; tuned for near-black roads + muted palette */
+  -webkit-filter: invert(1) hue-rotate(180deg) brightness(0.78) contrast(1.08) saturate(0.5);
+  filter: invert(1) hue-rotate(180deg) brightness(0.78) contrast(1.08) saturate(0.5);
+  transform: translateZ(0);
+}
+
+/* Soft edge blend into page background */
+.map-embed-dark-wrap::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 32px rgba(5, 5, 5, 0.5);
+}
+
+/* Edge-to-edge map on light contact pages */
+.map-embed-dark-wrap.map-embed-bleed {
+  border-radius: 0;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+}
+.map-embed-dark-wrap.map-embed-bleed::after {
+  border-radius: 0;
 }
 
 /* Notion/Linear Style Borders */

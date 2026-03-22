@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SEO from '../components/SEO';
+import SiteFooter from '../components/SiteFooter.jsx';
+import SiteHeader from '../components/SiteHeader.jsx';
 import RobotGuide from '../components/robotics/RobotGuide';
-import Magnet from '../components/ui/Magnet';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { getHeroProgress, getHeroDriveT } from '../utils/heroScrollProgress';
@@ -167,7 +168,7 @@ const RoboticsLandingPage = () => {
 
   return (
     <div
-      className="relative w-full min-h-screen overflow-x-hidden selection:bg-violet-600/30"
+      className="relative w-full min-h-screen max-w-[100%] overflow-x-clip selection:bg-violet-600/30"
       style={{
         backgroundColor: C.black,
         color: C.text,
@@ -181,29 +182,7 @@ const RoboticsLandingPage = () => {
       <RobotGuide />
 
       <main className="relative z-10 w-full pointer-events-none">
-        <header
-          className="fixed top-0 left-0 w-full px-6 md:px-10 py-5 flex justify-between items-center z-50 pointer-events-auto border-b backdrop-blur-md"
-          style={{
-            borderColor: 'rgba(234,234,234,0.08)',
-            backgroundColor: `${C.black}E6`,
-          }}
-        >
-          <div className="text-lg md:text-xl font-semibold tracking-tight" style={{ color: C.text }}>
-            ATSN ROBOTICS
-          </div>
-          <Magnet padding={48} magnetStrength={2.5}>
-            <button
-              type="button"
-              className="px-5 py-2 rounded-md text-sm font-medium transition-colors"
-              style={{
-                border: `1px solid rgba(234,234,234,0.18)`,
-                color: C.text,
-              }}
-            >
-              Book Demo
-            </button>
-          </Magnet>
-        </header>
+        <SiteHeader variant="overlay" />
 
         <section
           id="section-hero"
@@ -373,52 +352,7 @@ const RoboticsLandingPage = () => {
           id="section-footer"
           className="relative w-full min-h-[50vh] flex items-end pb-8 pointer-events-auto"
         >
-          <footer
-            className="w-full border-t pt-14 px-6 md:px-12 backdrop-blur-sm"
-            style={{
-              borderColor: 'rgba(234,234,234,0.1)',
-              backgroundColor: `${C.black}f0`,
-            }}
-          >
-            <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 pb-10">
-              <div className="col-span-2 md:col-span-1">
-                <h4 className="text-lg font-semibold mb-3 tracking-tight" style={{ color: C.text }}>
-                  ATSN Robotics
-                </h4>
-                <p className="text-sm leading-relaxed" style={{ color: C.secondary }}>
-                  Grounded autonomy for spaces that already run on tight timelines.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-4 text-xs uppercase tracking-wider" style={{ color: C.text }}>
-                  Company
-                </h4>
-                <ul className="text-sm space-y-3" style={{ color: C.secondary }}>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">About</li>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">Careers</li>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">Contact</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-4 text-xs uppercase tracking-wider" style={{ color: C.text }}>
-                  Legal
-                </h4>
-                <ul className="text-sm space-y-3" style={{ color: C.secondary }}>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">Privacy</li>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">Terms</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-4 text-xs uppercase tracking-wider" style={{ color: C.text }}>
-                  Connect
-                </h4>
-                <ul className="text-sm space-y-3" style={{ color: C.secondary }}>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">LinkedIn</li>
-                  <li className="transition-colors cursor-pointer hover:text-[#C084FC]">Twitter</li>
-                </ul>
-              </div>
-            </div>
-          </footer>
+          <SiteFooter />
         </section>
         </div>
       </main>

@@ -1,5 +1,9 @@
 {
   "name": "agent-emily",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "contact-api": "npm run dev --prefix backend",
+    "contact-api:start": "npm start --prefix backend"
+  }
 }
