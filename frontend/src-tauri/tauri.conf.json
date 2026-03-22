@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "package": {
-    "productName": "atsn ai",
+    "productName": "ATSN Robotics",
     "version": "1.0.0"
   },
   "tauri": {
     "windows": [
       {
-        "title": "ATSN AI",
+        "title": "ATSN Robotics",
         "width": 1920,
         "height": 1080,
         "resizable": true,

@@ -5,9 +5,11 @@
 @tailwind utilities;
 
 @layer base {
+  html,
   body {
-    @apply font-sans text-slate-900 bg-[#fbfbfa];
-    /* Soft off-white like Notion */
+    @apply font-sans text-slate-50;
+    background: #050505;
+    overscroll-behavior-y: none;
   }
 }
 
