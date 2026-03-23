@@ -16,9 +16,9 @@ import {
   gridItem,
   easeOut,
 } from '../utils/marketingMotion.js';
+import { getContactApiUrl } from '../utils/contactApiUrl.js';
 
-const CONTACT_API_URL =
-  import.meta.env.VITE_CONTACT_API_URL?.trim() || '/api/contact';
+const CONTACT_API_URL = getContactApiUrl();
 
 const FORMSPREE_FALLBACK =
   import.meta.env.VITE_FORMSPREE_FORM_ID && import.meta.env.VITE_CONTACT_USE_FORMSPREE === 'true'
@@ -99,7 +99,11 @@ const ContactInvitationPage = () => {
       setSubmitStatus('error');
     } catch {
       setSubmitStatus('error');
-      setSubmitErrorDetail('Network error — is the contact API running?');
+      setSubmitErrorDetail(
+        import.meta.env.DEV
+          ? 'Network error — check VITE_CONTACT_API_URL in .env.local, Vite proxy, and redeployed Vercel /api/contact.'
+          : 'Network error — please try again or email services@atsnai.com.'
+      );
     }
   };
 

@@ -58,10 +58,20 @@ const SiteFooter = ({ className = '', variant = 'dark' }) => {
         <h4 className={`font-semibold mb-6 text-sm uppercase tracking-wider ${isLight ? 'text-slate-200' : 'text-neutral-200'}`}>Legal</h4>
         <ul className={`text-sm space-y-4 ${isLight ? 'text-slate-400' : 'text-neutral-500'}`}>
           <li>
-            <span className={`cursor-pointer transition-colors ${isLight ? 'hover:text-white' : 'hover:text-violet-400'}`}>Privacy Policy</span>
+            <Link
+              to="/privacy"
+              className={isLight ? 'hover:text-white transition-colors' : 'hover:text-violet-400 transition-colors'}
+            >
+              Privacy Policy
+            </Link>
           </li>
           <li>
-            <span className={`cursor-pointer transition-colors ${isLight ? 'hover:text-white' : 'hover:text-violet-400'}`}>Terms of Service</span>
+            <Link
+              to="/terms"
+              className={isLight ? 'hover:text-white transition-colors' : 'hover:text-violet-400 transition-colors'}
+            >
+              Terms &amp; Conditions
+            </Link>
           </li>
         </ul>
       </div>

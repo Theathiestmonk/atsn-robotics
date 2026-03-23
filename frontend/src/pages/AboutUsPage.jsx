@@ -87,29 +87,49 @@ const argoCardVariants = {
 const HERO_BG =
   'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80';
 
-/** Accent image for OUR VISION — spatial / operations context (not landing warehouse) */
-const VISION_IMAGE =
-  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=80';
+const MARKETING_IMG = {
+  hotel: '/images/marketing/hotel-lobby.png',
+  retail: '/images/marketing/retail-atrium.png',
+  stadium: '/images/marketing/stadium.png',
+};
+
+/** Accent image for OUR VISION — luxury hospitality context */
+const VISION_IMAGE = MARKETING_IMG.hotel;
 
 const ARGO_PILLARS = [
   {
     title: 'Graceful Hospitality',
     body:
       'An extension of warm hospitality. From presenting a beautifully plated dinner to softly gliding down a corridor with fresh linens and amenities, ARGO ensures every guest feels deeply cared for. It handles the journey with whisper-quiet precision and seamless digital payments, leaving human interactions warm, personal, and completely uninterrupted.',
+    media: {
+      kind: 'single',
+      src: MARKETING_IMG.hotel,
+      alt: 'Luxury hotel lobby — refined, calm hospitality setting',
+    },
   },
   {
     title: 'Curated Retail Spaces',
     body:
       'A beautifully immersive atmosphere. ARGO acts as a subtle companion on the retail floor, carrying items and softly filling the boutique with curated ambient audio. It navigates gently around shoppers, moving in perfect sync with the flow of the room to create a flawless, inviting environment.',
+    media: {
+      kind: 'single',
+      src: MARKETING_IMG.retail,
+      alt: 'Spacious luxury retail atrium — multiple levels, escalators, and warm architectural lighting',
+    },
   },
   {
     title: 'High-Energy Venues & Stadiums',
     body:
       'Premium care in the crowd. Even in the highest energy stadiums, ARGO brings a sense of calm, VIP reliability. Whether delivering chilled beverages directly to your seat or safely navigating a dense concourse, its robust, waterproof design ensures fans are perfectly cared for without ever missing a play.',
+    media: {
+      kind: 'single',
+      src: MARKETING_IMG.stadium,
+      alt: 'Stadium at night — packed stands, concourse, and floodlit pitch',
+    },
   },
 ];
 
-function ImageFrame({ src, alt, className = '' }) {
+function ImageFrame({ src, alt, className = '', imgStyle }) {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border border-white/[0.08] bg-neutral-900 shadow-[0_0_0_1px_rgba(139,92,246,0.12),0_24px_64px_-16px_rgba(0,0,0,0.75)] ${className}`}
@@ -118,7 +138,14 @@ function ImageFrame({ src, alt, className = '' }) {
         className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-violet-600/20 via-transparent to-transparent z-[1]"
         aria-hidden
       />
-      <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+      <img
+        src={src}
+        alt={alt}
+        className="h-full w-full object-cover"
+        style={imgStyle}
+        loading="lazy"
+        decoding="async"
+      />
     </div>
   );
 }
@@ -209,7 +236,7 @@ const AboutUsPage = () => {
             >
               <ImageFrame
                 src={VISION_IMAGE}
-                alt="Professional on a dynamic venue floor — spatial intelligence in real operations"
+                alt="Luxury hotel lobby — refined spaces where quiet service matters"
                 className="aspect-[4/3] w-full"
               />
             </motion.div>
@@ -336,7 +363,7 @@ const AboutUsPage = () => {
               </motion.div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-7">
-                {ARGO_PILLARS.map(({ title, body }, index) => (
+                {ARGO_PILLARS.map(({ title, body, media }, index) => (
                   <motion.article
                     key={title}
                     custom={index}
@@ -367,6 +394,31 @@ const AboutUsPage = () => {
                       }}
                       aria-hidden
                     />
+                    {media?.kind === 'single' && (
+                      <motion.div
+                        className="relative z-[1] mb-5 aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/[0.08] bg-neutral-900 shadow-[0_0_0_1px_rgba(139,92,246,0.12),0_20px_48px_-16px_rgba(0,0,0,0.65)]"
+                        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                        whileInView={reduceMotion ? {} : { opacity: 1, y: 0 }}
+                        viewport={viewportOnce}
+                        transition={{ duration: 0.55, ease: easeOut }}
+                      >
+                        <motion.img
+                          src={media.src}
+                          alt={media.alt}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          initial={{ scale: 1 }}
+                          whileInView={reduceMotion ? {} : { scale: 1.05 }}
+                          transition={{ duration: 14, ease: 'linear' }}
+                          viewport={viewportOnce}
+                        />
+                        <div
+                          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-tr from-violet-600/20 via-transparent to-transparent"
+                          aria-hidden
+                        />
+                      </motion.div>
+                    )}
                     <div
                       className="mb-4 flex items-center gap-3"
                       style={{ color: BRAND.accent }}

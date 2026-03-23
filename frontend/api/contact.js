@@ -1,66 +1,60 @@
 /**
- * Contact form → email via Gmail SMTP (App Password).
- * POST /contact  JSON { name, email, subject, message, company?, phone? }
+ * Vercel Serverless — POST /api/contact (JSON body → SMTP)
+ * Env (Vercel project → Settings → Environment Variables):
+ *   SMTP_USER, SMTP_PASS, CONTACT_TO_EMAIL (optional),
+ *   SMTP_HOST, SMTP_PORT, SMTP_SECURE (optional)
  */
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import nodemailer from 'nodemailer';
-import rateLimit from 'express-rate-limit';
 
-const PORT = Number(process.env.PORT) || 8787;
 const CONTACT_TO = (process.env.CONTACT_TO_EMAIL || 'services@atsnai.com').trim();
-
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
 const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
-/** Trim — trailing spaces in .env break Gmail login */
 const SMTP_USER = process.env.SMTP_USER?.trim() || '';
-/** Gmail App Passwords: 16 chars; spaces in .env are OK — strip for SMTP */
 const SMTP_PASS = (process.env.SMTP_PASS || '').replace(/\s/g, '');
-
-const corsOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
-  : true;
-
-const app = express();
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '48kb' }));
-
-app.use(
-  cors({
-    origin: corsOrigins,
-    methods: ['POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
-  })
-);
-
-const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { ok: false, error: 'Too many submissions. Try again later.' },
-});
 
 function isNonEmptyString(v, maxLen) {
   return typeof v === 'string' && v.trim().length > 0 && v.length <= maxLen;
 }
 
-app.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'contact-api' });
-});
+function parseBody(req) {
+  if (req.body == null) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
 
-app.post('/contact', contactLimiter, async (req, res) => {
+export default async function handler(req, res) {
+  // Required on POST responses too — browsers block cross-origin fetch without this (e.g. localhost → Vercel).
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, error: 'Method not allowed' });
+  }
+
   if (!SMTP_USER || !SMTP_PASS) {
-    console.error('Missing SMTP_USER or SMTP_PASS in environment');
+    console.error('Missing SMTP_USER or SMTP_PASS');
     return res.status(503).json({
       ok: false,
       error: 'Email service is not configured on the server.',
     });
   }
 
-  const { name, email, subject, message, company, phone } = req.body || {};
+  const body = parseBody(req);
+  const { name, email, subject, message, company, phone } = body;
 
   if (!isNonEmptyString(name, 200)) {
     return res.status(400).json({ ok: false, error: 'Invalid or missing name.' });
@@ -85,10 +79,7 @@ app.post('/contact', contactLimiter, async (req, res) => {
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: SMTP_SECURE,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
     tls: { rejectUnauthorized: true },
   });
 
@@ -118,7 +109,7 @@ app.post('/contact', contactLimiter, async (req, res) => {
       subject: `[Contact] ${subject.trim()}`,
       text,
     });
-    return res.json({ ok: true });
+    return res.status(200).json({ ok: true });
   } catch (err) {
     const code = err.responseCode || err.code;
     console.error('SMTP send failed:', err.message, code ? `(code ${code})` : '');
@@ -130,32 +121,6 @@ app.post('/contact', contactLimiter, async (req, res) => {
     const msg = isAuth
       ? 'Gmail rejected login — check SMTP_USER has no extra spaces and SMTP_PASS is a 16-character App Password.'
       : 'Could not send email. Check server logs or try again.';
-    return res.status(502).json({
-      ok: false,
-      error: msg,
-    });
+    return res.status(502).json({ ok: false, error: msg });
   }
-});
-
-app.use((_req, res) => {
-  res.status(404).json({ ok: false, error: 'Not found' });
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Contact API listening on http://localhost:${PORT}`);
-  console.log(`POST /contact → ${CONTACT_TO}`);
-  if (!SMTP_USER || !SMTP_PASS) {
-    console.warn('⚠ Set SMTP_USER and SMTP_PASS in backend/.env');
-  }
-});
-
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Port ${PORT} is already in use.`);
-    console.error('   Close the other terminal or run: netstat -ano | findstr :' + PORT);
-    console.error('   Then: taskkill /PID <pid> /F');
-    console.error('   Or pick another PORT in backend/.env and set VITE_CONTACT_API_PORT in frontend/.env.local\n');
-    process.exit(1);
-  }
-  throw err;
-});
+}

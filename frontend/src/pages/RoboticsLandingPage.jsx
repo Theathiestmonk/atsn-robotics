@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import SEO from '../components/SEO';
 import SiteFooter from '../components/SiteFooter.jsx';
 import SiteHeader from '../components/SiteHeader.jsx';
@@ -6,6 +7,7 @@ import RobotGuide from '../components/robotics/RobotGuide';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { getHeroProgress, getHeroDriveT } from '../utils/heroScrollProgress';
+import { viewportOnce } from '../utils/marketingMotion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,25 +41,67 @@ const HERO_SUB_TE = 0.6;
 const HERO_SUB_DWELL_END = 0.74;
 const HERO_SUB_UP_PX = 110;
 
-const INDUSTRY_CARDS = [
+const MARKETING_IMG = {
+  hotel: '/images/marketing/hotel-lobby.png',
+  retail: '/images/marketing/retail-atrium.png',
+  stadium: '/images/marketing/stadium.png',
+};
+
+const INDUSTRY_SECTIONS = [
   {
+    key: 'hotels-restaurants',
     title: 'Hotels & Restaurants',
     body:
       'Movement should adapt to proximity, navigate tight spaces, and preserve the natural flow of human interaction.',
+    variant: 'hotelRestaurant',
   },
   {
+    key: 'retail',
     title: 'Retail Spaces',
     body:
       'Movement should respond to shifting foot traffic and reposition in sync with the environment.',
+    variant: 'retail',
   },
   {
+    key: 'stadium',
     title: 'Sports Grounds & Stadiums',
     body:
       'Movement should stay consistent across large grounds while maintaining distance from dense crowd activity.',
+    variant: 'stadium',
   },
 ];
 
+function IndustryPhoto({ src, alt, className = '', aspectClass = 'aspect-[4/3]', objectPosition, reduceMotion }) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-xl border bg-neutral-900 ${aspectClass} ${className}`}
+      style={{
+        borderColor: 'rgba(234,234,234,0.1)',
+        boxShadow: `0 0 0 1px ${C.glow}22, 0 16px 48px rgba(0,0,0,0.45)`,
+      }}
+    >
+      <motion.img
+        src={src}
+        alt={alt}
+        className="h-full w-full object-cover"
+        style={{ objectPosition: objectPosition || 'center' }}
+        loading="lazy"
+        decoding="async"
+        initial={{ scale: 1 }}
+        whileInView={reduceMotion ? {} : { scale: 1.06 }}
+        transition={{ duration: 16, ease: 'linear' }}
+        viewport={viewportOnce}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/40 via-transparent to-black/10"
+        aria-hidden
+      />
+    </div>
+  );
+}
+
 const RoboticsLandingPage = () => {
+  const reduceMotion = useReducedMotion();
   const heroTextRef = useRef(null);
   const heroSubRef = useRef(null);
   const coreVisualRef = useRef(null);
@@ -302,25 +346,80 @@ const RoboticsLandingPage = () => {
           </div>
 
           <div className="flex flex-col items-center gap-24 md:gap-32 pb-12">
-            {INDUSTRY_CARDS.map((item) => (
+            {INDUSTRY_SECTIONS.map((item) => (
               <article
-                key={item.title}
-                className="immersive-card w-full max-w-[960px] px-4"
+                key={item.key}
+                className="immersive-card w-full max-w-[1100px] px-4"
               >
                 <div
-                  className="rounded-xl border px-8 py-10 md:px-12 md:py-12"
+                  className="rounded-xl border px-6 py-10 md:px-10 md:py-12 lg:px-12 lg:py-14"
                   style={{
                     backgroundColor: C.surface,
                     borderColor: 'rgba(234,234,234,0.1)',
                     boxShadow: `0 0 0 1px ${C.glow}26, 0 20px 60px rgba(0,0,0,0.5)`,
                   }}
                 >
-                  <h3 className="text-2xl md:text-3xl font-semibold mb-6" style={{ color: C.text }}>
-                    {item.title}
-                  </h3>
-                  <p className="text-lg md:text-xl leading-relaxed max-w-3xl" style={{ color: C.secondary }}>
-                    {item.body}
-                  </p>
+                  {item.variant === 'retail' && (
+                    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+                      <div className="order-2 space-y-6 lg:order-1">
+                        <h3 className="text-2xl md:text-3xl font-semibold" style={{ color: C.text }}>
+                          {item.title}
+                        </h3>
+                        <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
+                          {item.body}
+                        </p>
+                      </div>
+                      <div className="order-1 lg:order-2">
+                        <IndustryPhoto
+                          src={MARKETING_IMG.retail}
+                          alt="Bright multi-level retail atrium with escalators, glass dome, and storefronts"
+                          aspectClass="aspect-[16/10] lg:aspect-[4/3]"
+                          reduceMotion={reduceMotion}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {item.variant === 'hotelRestaurant' && (
+                    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+                      <div className="order-2 space-y-6 lg:order-1">
+                        <h3 className="text-2xl md:text-3xl font-semibold" style={{ color: C.text }}>
+                          {item.title}
+                        </h3>
+                        <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
+                          {item.body}
+                        </p>
+                      </div>
+                      <div className="order-1 lg:order-2">
+                        <IndustryPhoto
+                          src={MARKETING_IMG.hotel}
+                          alt="Upscale hotel lobby — calm, premium hospitality environment"
+                          reduceMotion={reduceMotion}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {item.variant === 'stadium' && (
+                    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+                      <div className="order-1">
+                        <IndustryPhoto
+                          src={MARKETING_IMG.stadium}
+                          alt="Evening match in a modern stadium — crowds, concourse, and floodlit pitch"
+                          aspectClass="aspect-[16/10] lg:aspect-[4/3]"
+                          reduceMotion={reduceMotion}
+                        />
+                      </div>
+                      <div className="order-2 space-y-6">
+                        <h3 className="text-2xl md:text-3xl font-semibold" style={{ color: C.text }}>
+                          {item.title}
+                        </h3>
+                        <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
+                          {item.body}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </article>
             ))}

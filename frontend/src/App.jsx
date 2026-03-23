@@ -5,6 +5,8 @@ import RoboticsLandingPage from './pages/RoboticsLandingPage.jsx'
 import AboutUsPage from './pages/AboutUsPage.jsx'
 import ContactUsPage from './pages/ContactUsPage.jsx'
 import ContactInvitationPage from './pages/ContactInvitationPage.jsx'
+import TermsOfServicePage from './pages/TermsOfServicePage.jsx'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
           <Route path="/contact/invite" element={<ContactInvitationPage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
       </BrowserRouter>
     </HelmetProvider>

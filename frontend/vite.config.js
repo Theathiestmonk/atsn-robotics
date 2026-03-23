@@ -7,28 +7,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, __dirname, '')
-  // Must match backend/.env PORT (contact API)
-  const contactApiPort = env.VITE_CONTACT_API_PORT || '8788'
+  const env = loadEnv(mode, __dirname, 'VITE_')
+  const contactRemote = env.VITE_CONTACT_API_URL?.trim()
+
+  const proxy = {}
+  if (mode === 'development' && contactRemote) {
+    try {
+      const { origin } = new URL(contactRemote)
+      proxy['/api/contact'] = {
+        target: origin,
+        changeOrigin: true,
+        secure: true,
+      }
+    } catch {
+      console.warn('[vite] Invalid VITE_CONTACT_API_URL; /api/contact proxy disabled:', contactRemote)
+    }
+  }
+  proxy['/api'] = {
+    target: 'http://localhost:8000',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api/, ''),
+  }
 
   return {
     plugins: [react()],
     server: {
       port: 3000,
       strictPort: false,
-      // Order matters: more specific `/api/contact` before `/api`
-      proxy: {
-        '/api/contact': {
-          target: `http://localhost:${contactApiPort}`,
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/api\/contact/, '/contact'),
-        },
-        '/api': {
-          target: 'http://localhost:8000',
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/api/, ''),
-        },
-      },
+      host: true,
+      proxy,
     },
     build: {
       outDir: 'dist',

@@ -95,3 +95,20 @@ export const gridItem = {
     transition: transitionFast,
   },
 };
+
+/** Legal pages (Terms, Privacy) — hero stagger */
+export const legalHeroContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.085, delayChildren: 0.04 },
+  },
+};
+
+export const legalHeroItem = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: easeOut },
+  },
+};
