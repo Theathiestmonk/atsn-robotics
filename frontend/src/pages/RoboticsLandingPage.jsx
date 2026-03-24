@@ -205,9 +205,10 @@ const RoboticsLandingPage = () => {
 
       <RobotGuide heroProgressRef={heroProgressRef} scrollRef={scrollRef} />
 
-      <main className="relative z-10 w-full pointer-events-none">
-        <SiteHeader variant="overlay" />
+      {/* Outside <main> so z-index stacks above the z-10 content layer and WebGL canvas */}
+      <SiteHeader variant="overlay" />
 
+      <main className="relative z-10 w-full pointer-events-none">
         <section id="section-hero" className="relative w-full pointer-events-auto">
           {/* Phase 1 spacer: creates scroll distance for robot animation (250vh = ~1.5 vp scroll + buffer) */}
           <div style={{ height: '250vh' }} aria-hidden="true" />

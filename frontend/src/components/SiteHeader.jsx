@@ -66,7 +66,7 @@ const SiteHeader = ({ variant = 'solid' }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-[100] px-4 sm:px-6 md:px-10 py-4 md:py-6 flex justify-between items-center pointer-events-auto ${barClass}`}
+        className={`fixed top-0 left-0 w-full z-[1100] isolate px-4 sm:px-6 md:px-10 py-4 md:py-6 flex justify-between items-center pointer-events-auto ${barClass}`}
       >
         <Link to="/" className={logoClass}>
           ATSN ROBOTICS
@@ -100,7 +100,7 @@ const SiteHeader = ({ variant = 'solid' }) => {
       {menuOpen && (
         <div
           id="mobile-nav-panel"
-          className={`fixed inset-0 z-[90] pt-[4.5rem] px-6 pb-8 md:hidden pointer-events-auto ${
+          className={`fixed inset-0 z-[1050] pt-[4.5rem] px-6 pb-8 md:hidden pointer-events-auto ${
             isLight ? 'bg-white border-t border-slate-100' : 'bg-[#050505]'
           }`}
           role="dialog"
