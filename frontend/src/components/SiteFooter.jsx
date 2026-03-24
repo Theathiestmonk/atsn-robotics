@@ -38,6 +38,14 @@ const SiteFooter = ({ className = '', variant = 'dark' }) => {
             </Link>
           </li>
           <li>
+            <Link
+              to="/products"
+              className={isLight ? 'hover:text-white transition-colors' : 'hover:text-violet-400 transition-colors'}
+            >
+              Products
+            </Link>
+          </li>
+          <li>
             <Link to="/about" className={isLight ? 'hover:text-white transition-colors' : 'hover:text-violet-400 transition-colors'}>
               About Us
             </Link>

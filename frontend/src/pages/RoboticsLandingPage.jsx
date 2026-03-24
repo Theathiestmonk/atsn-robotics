@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import SEO from '../components/SEO';
 import SiteFooter from '../components/SiteFooter.jsx';
@@ -54,6 +55,8 @@ const INDUSTRY_SECTIONS = [
     body:
       'Movement should adapt to proximity, navigate tight spaces, and preserve the natural flow of human interaction.',
     variant: 'hotelRestaurant',
+    productTo: '/products#argo-h',
+    productCta: 'View ARGO-H',
   },
   {
     key: 'retail',
@@ -61,6 +64,8 @@ const INDUSTRY_SECTIONS = [
     body:
       'Movement should respond to shifting foot traffic and reposition in sync with the environment.',
     variant: 'retail',
+    productTo: '/products#argo-r',
+    productCta: 'View ARGO-R',
   },
   {
     key: 'stadium',
@@ -68,6 +73,8 @@ const INDUSTRY_SECTIONS = [
     body:
       'Movement should stay consistent across large grounds while maintaining distance from dense crowd activity.',
     variant: 'stadium',
+    productTo: '/products#argo-s',
+    productCta: 'View ARGO-S',
   },
 ];
 
@@ -368,6 +375,16 @@ const RoboticsLandingPage = () => {
                         <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
                           {item.body}
                         </p>
+                        {item.productTo && (
+                          <Link
+                            to={item.productTo}
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-90"
+                            style={{ color: C.glow }}
+                          >
+                            {item.productCta}
+                            <span aria-hidden>→</span>
+                          </Link>
+                        )}
                       </div>
                       <div className="order-1 lg:order-2">
                         <IndustryPhoto
@@ -389,6 +406,16 @@ const RoboticsLandingPage = () => {
                         <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
                           {item.body}
                         </p>
+                        {item.productTo && (
+                          <Link
+                            to={item.productTo}
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-90"
+                            style={{ color: C.glow }}
+                          >
+                            {item.productCta}
+                            <span aria-hidden>→</span>
+                          </Link>
+                        )}
                       </div>
                       <div className="order-1 lg:order-2">
                         <IndustryPhoto
@@ -417,6 +444,16 @@ const RoboticsLandingPage = () => {
                         <p className="text-lg md:text-xl leading-relaxed" style={{ color: C.secondary }}>
                           {item.body}
                         </p>
+                        {item.productTo && (
+                          <Link
+                            to={item.productTo}
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-90"
+                            style={{ color: C.glow }}
+                          >
+                            {item.productCta}
+                            <span aria-hidden>→</span>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   )}

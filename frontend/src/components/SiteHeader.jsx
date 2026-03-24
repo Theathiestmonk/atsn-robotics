@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
+  { to: '/products', label: 'Products' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
   { to: '/contact/invite', label: "Let's Talk" },
@@ -99,7 +100,7 @@ const SiteHeader = ({ variant = 'solid' }) => {
       {menuOpen && (
         <div
           id="mobile-nav-panel"
-          className={`fixed inset-0 z-[90] pt-[4.5rem] px-6 pb-8 md:hidden ${
+          className={`fixed inset-0 z-[90] pt-[4.5rem] px-6 pb-8 md:hidden pointer-events-auto ${
             isLight ? 'bg-white border-t border-slate-100' : 'bg-[#050505]'
           }`}
           role="dialog"
