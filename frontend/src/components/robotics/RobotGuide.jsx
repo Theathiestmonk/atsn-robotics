@@ -5,29 +5,19 @@ import { getScrollProgressThroughSection, easeInOutCubic } from '../../utils/her
 
 // ── 3D waypoints ────────────────────────────────────────────────────────────
 const CENTER_POS = [0, -1, 0]
-/**
- * Hero path: upper-left → lower-right, kept inside the camera frustum (avoid extreme X/Y).
- * Tuned for camera pulled back + slightly wider FOV so start/end stay on-screen.
- */
-const HERO_PARK_POS = [-3.35, -0.05, 0.1]
-/** End of hero + guide pose for sections after hero */
-const GUIDE_POS  = [2.35, -1.3, -0.5]
-/** Yaw aligned with diagonal (XZ); small offset if model forward axis differs */
-const HERO_PATH_YAW =
-  Math.atan2(GUIDE_POS[0] - HERO_PARK_POS[0], GUIDE_POS[2] - HERO_PARK_POS[2]) + 0.08
-const PARK_POS   = [0, -1, 0]   // returns to center to "park"
+/** Start: left, Y=0.7 */
+const HERO_PARK_POS = [-3.35, 0.7, 0]
+/** End: far right, off-screen at Y=0.7 */
+const GUIDE_POS  = [7, 0.7, 0]
+/** X-only motion left→right: yaw faces right */
+const HERO_PATH_YAW = 0
 
-/** Uniform scale vs prior art direction (1.5 = 50% larger on screen) */
-const ROBOT_SCALE_MUL = 1.5
+/** Uniform scale: 33% larger than prior (1.5 * 1.33) */
+const ROBOT_SCALE_MUL = 2.0
 
 useGLTF.preload('/models/robot.glb')
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-function easeOutCubic(t) {
-  const c = Math.max(0, Math.min(1, t))
-  return 1 - Math.pow(1 - c, 3)
-}
-
 function lerp(a, b, t) {
   return a + (b - a) * t
 }
@@ -42,32 +32,37 @@ const SECTIONS = [
   { id: 'section-footer',      key: 'footer' },
 ]
 
-function useSectionProgressRefs() {
+function useSectionProgressRefs(scrollRef) {
   const sectionRef         = useRef('hero')
   const sectionProgressRef = useRef(0)
 
-  useEffect(() => {
-    const handle = () => {
-      const scrollY = window.scrollY
-      const vh = window.innerHeight
-
-      for (const cfg of SECTIONS) {
-        const el = document.getElementById(cfg.id)
-        if (!el) continue
-
-        const top = el.offsetTop
-        const height = el.offsetHeight || 1
-        const bottom = top + height
-
-        // Section active when its vertical range intersects the viewport
-        if (scrollY + vh > top && scrollY < bottom) {
-          sectionRef.current = cfg.key
-          sectionProgressRef.current = getScrollProgressThroughSection(el)
-          return
-        }
+  const updateSection = (scrollY) => {
+    const vh = window.innerHeight
+    for (const cfg of SECTIONS) {
+      const el = document.getElementById(cfg.id)
+      if (!el) continue
+      const top = el.offsetTop
+      const height = el.offsetHeight || 1
+      const bottom = top + height
+      if (scrollY + vh > top && scrollY < bottom) {
+        sectionRef.current = cfg.key
+        sectionProgressRef.current = getScrollProgressThroughSection(el, scrollY)
+        return
       }
     }
+  }
 
+  useEffect(() => {
+    if (scrollRef) {
+      let raf = 0
+      const tick = () => {
+        updateSection(scrollRef.current)
+        raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+      return () => cancelAnimationFrame(raf)
+    }
+    const handle = () => updateSection(window.scrollY)
     handle()
     window.addEventListener('scroll', handle, { passive: true })
     window.addEventListener('resize', handle)
@@ -75,13 +70,13 @@ function useSectionProgressRefs() {
       window.removeEventListener('scroll', handle)
       window.removeEventListener('resize', handle)
     }
-  }, [])
+  }, [scrollRef])
 
   return { sectionRef, sectionProgressRef }
 }
 
 // ── Robot model ──────────────────────────────────────────────────────────────
-function RobotModel({ sectionRef, sectionProgressRef }) {
+function RobotModel({ sectionRef, sectionProgressRef, heroProgressRef }) {
   const group       = useRef()
   const { scene }   = useGLTF('/models/robot.glb')
   const materialsRef = useRef([])
@@ -103,7 +98,7 @@ function RobotModel({ sectionRef, sectionProgressRef }) {
     if (!group.current) return
 
     const section = sectionRef.current
-    const prog    = sectionProgressRef.current
+    const prog    = section === 'hero' && heroProgressRef ? heroProgressRef.current : sectionProgressRef.current
 
     let targetOpacity = 0
     let targetScale   = 0.8 * ROBOT_SCALE_MUL
@@ -112,71 +107,29 @@ function RobotModel({ sectionRef, sectionProgressRef }) {
     let targetRotY    = 0
     let targetRotZ    = 0
 
-    // ── Hero: parked left-upper → drive to right-bottom as user scrolls (p = 0..1) ──
+    // ── Hero only: robot visible. Other sections: hidden ──
     if (section === 'hero') {
       const p = prog
       const clock = state.clock.getElapsedTime()
-      // Scroll-only motion: still target when user stops scrolling (p fixed)
       const te = easeInOutCubic(p)
       const moveW = Math.sin(te * Math.PI)
 
       targetPos = [
         lerp(HERO_PARK_POS[0], GUIDE_POS[0], te),
-        lerp(HERO_PARK_POS[1], GUIDE_POS[1], te),
-        lerp(HERO_PARK_POS[2], GUIDE_POS[2], te),
+        HERO_PARK_POS[1],
+        0,
       ]
       targetOpacity = lerp(0.45, 1, Math.min(1, te * 1.05))
       targetScale = 0.82 * ROBOT_SCALE_MUL
-      targetRotY = lerp(HERO_PATH_YAW * 0.45, HERO_PATH_YAW, te)
-      // Driving feel: slight pitch into the move + tiny roll only while mid-path
+      targetRotY = HERO_PATH_YAW
       targetRotX = -0.04 * moveW
       targetRotZ = Math.sin(clock * 11) * 0.01 * moveW
-
-    // ── Core idea: minimal idle at guide (no long wobble) ────────────────────
-    } else if (section === 'meet-argo') {
-      const clock = state.clock.getElapsedTime()
-      const idleY = Math.sin(clock * 1.15) * 0.02
-      targetOpacity = 1
-      targetScale = 0.9 * ROBOT_SCALE_MUL
-      targetPos = [GUIDE_POS[0], GUIDE_POS[1] + idleY, GUIDE_POS[2]]
+    } else {
+      // Keep position at hero exit; do not lerp toward CENTER_POS (visible "return" bug).
+      targetOpacity = 0
+      targetPos = [GUIDE_POS[0], GUIDE_POS[1], GUIDE_POS[2]]
+      targetScale = 0.82 * ROBOT_SCALE_MUL
       targetRotY = HERO_PATH_YAW
-      targetRotX = Math.sin(clock * 1) * 0.01
-      targetRotZ = Math.sin(clock * 1.2) * 0.008
-
-    // ── Industries: minimal idle at guide ──────────────────────────────────
-    } else if (section === 'industries') {
-      const clock = state.clock.getElapsedTime()
-      const idleY = Math.sin(clock * 1.15) * 0.02
-      targetOpacity = 1
-      targetScale   = 0.9 * ROBOT_SCALE_MUL
-      targetPos     = [GUIDE_POS[0], GUIDE_POS[1] + idleY, GUIDE_POS[2]]
-      targetRotY    = HERO_PATH_YAW
-      targetRotX    = Math.sin(clock * 1) * 0.01
-      targetRotZ    = Math.sin(clock * 1.2) * 0.008
-
-    // ── Real World: drive back to center and park ─────────────────────────
-    } else if (section === 'real-world') {
-      const returnT  = easeOutCubic(prog)
-      targetOpacity  = 1
-      targetScale    = lerp(0.9 * ROBOT_SCALE_MUL, 1.2 * ROBOT_SCALE_MUL, returnT)
-      targetPos      = [
-        lerp(GUIDE_POS[0], PARK_POS[0], returnT),
-        lerp(GUIDE_POS[1], PARK_POS[1], returnT),
-        lerp(GUIDE_POS[2], PARK_POS[2], returnT),
-      ]
-      targetRotY     = lerp(HERO_PATH_YAW, 0, returnT)
-      targetRotX     = 0
-      targetRotZ     = 0
-
-    // ── Footer: dissolve quickly in the first 30% of scroll, then gone ────
-    } else if (section === 'footer') {
-      const dissolveT = Math.min(1, prog / 0.05)
-      targetOpacity = lerp(1, 0, dissolveT)
-      targetScale   = 1.2 * ROBOT_SCALE_MUL
-      targetPos     = [...PARK_POS]
-      targetRotY    = 0
-      targetRotX    = 0
-      targetRotZ    = 0
     }
 
     // ── Smooth position / scale / rotation ───────────────────────────────
@@ -208,11 +161,11 @@ function RobotFallback() {
 }
 
 // ── Main export ──────────────────────────────────────────────────────────────
-const RobotGuide = () => {
-  const { sectionRef, sectionProgressRef } = useSectionProgressRefs()
+const RobotGuide = ({ heroProgressRef, scrollRef }) => {
+  const { sectionRef, sectionProgressRef } = useSectionProgressRefs(scrollRef)
 
   return (
-    <div className="fixed inset-0 z-0 h-full w-full max-w-full pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden max-w-full">
       <Canvas
         className="!block h-full w-full max-w-full touch-none"
         style={{ width: '100%', height: '100%' }}
@@ -223,7 +176,11 @@ const RobotGuide = () => {
         <directionalLight position={[-5, 3, -3]} intensity={1.5} />
 
         <Suspense fallback={<RobotFallback />}>
-          <RobotModel sectionRef={sectionRef} sectionProgressRef={sectionProgressRef} />
+          <RobotModel
+            sectionRef={sectionRef}
+            sectionProgressRef={sectionProgressRef}
+            heroProgressRef={heroProgressRef}
+          />
         </Suspense>
       </Canvas>
     </div>

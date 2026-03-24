@@ -22,6 +22,20 @@
   }
 }
 
+/* Robotics landing: hide native scrollbar (Lenis still scrolls the page) */
+html.robotics-landing-hide-scrollbar,
+body.robotics-landing-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.robotics-landing-hide-scrollbar::-webkit-scrollbar,
+body.robotics-landing-hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+  background: transparent;
+}
+
 /* Google Maps iframe — dark theme to match #050505 + violet accents (embed has no native dark mode) */
 .map-embed-dark-wrap {
   position: relative;
